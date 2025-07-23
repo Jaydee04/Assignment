@@ -1,0 +1,265 @@
+<script>
+    
+
+let exam=[];
+let users= [];
+const admin = {username : "Musa", password : "102030" };
+
+function login(){
+let username = prompt(" Please enter your username: ");
+let password = prompt("Please enter your password: ");
+
+    if ( username && username.toLowerCase() === admin.username.toLowerCase() &&  password === admin.password) {
+        alert("Login Successful as Admin");
+        showAdminMenu();
+        return "admin";
+    }
+    let user = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
+    if (user){
+        alert(" login successful as user")
+        showUserMenu(user);
+        return;
+    }
+}
+
+function showAdminMenu() {
+let choice = prompt(
+"Admin Menu:\n" +
+"1. Create User\n" +
+"2. Add Questions\n" +
+"3. View All Users\n" +
+"4. View exams\n" +
+"5. Logout"
+);
+switch(choice) {
+    case "1":
+        alert (" Create New User");
+        createUser();
+        break;
+        case "2":
+        alert (" Add Questions");
+        addQuestion();
+        break; 
+    case "3":
+        alert (" View all users ");
+        viewUsers();
+        break;
+    case "4":
+        alert (" View exams");
+        viewExam();
+        break;
+    case "5":
+        alert (" Logout");
+        login();
+        break;
+    default:
+        alert ( " invalid option");
+        showAdminMenu();
+        break;
+}
+}
+login();
+
+function showUserMenu(user){
+let choice = prompt(
+    "Student Menu (" + user.username + "):\n" +
+"1. Take Exam\n" +
+"2. Logout"
+)
+switch(choice){
+case "1":
+    takeExam(user);
+    break;
+case "2":
+alert ("Logged out");
+login();
+    break;
+default:
+    alert("Invalid Option")
+    showUserMenu(user);
+    break;
+}
+}
+
+function createUser (){
+
+let username = prompt(" Enter new user username");
+if (!username){
+alert("field cannot be empty");
+createUser();
+return;
+}
+let extUser = users.find(u => u.username.toLowerCase() === username.toLocaleLowerCase());
+if (extUser){
+alert("This user already exists");
+createUser();
+return;
+}
+let password = prompt("Please enter your password");
+if (!password){
+alert("field cannot be empty ");
+createUser();
+return;
+}
+users.push({ username: username, password: password})
+alert(" User created succesfully");
+showAdminMenu();
+}
+
+function addQuestion() {
+
+let title = prompt("Enter subject name");
+if (title === null) {
+showAdminMenu();
+return;
+}
+
+
+if (!title) {
+alert("Field cannot be empty");
+addQuestion();
+return;
+}
+
+let extQues = exam.find(e => e.title.toLowerCase() === title.toLowerCase());
+if (extQues) {
+alert("Exam already exists");
+addQuestion();
+return;
+}
+let newExam = {
+title: title,
+questions:[]
+};
+exam.push(newExam);
+alert("'" + title + "' created successfully");
+
+let addq = prompt ("Do you want to addd a new question?(yes/no)")
+if (addq && addq.toLocaleLowerCase()=== "yes"){
+addQuestionExam(newExam);
+}else{
+showAdminMenu();
+}
+
+}
+function addQuestionExam(examObject){
+let questionText = prompt ("Please enter your question");
+if (!questionText){
+alert("Field cannot be empty");
+addQuestionExam(examObject);
+return;
+}
+examObject.questions.push({
+question: questionText
+});
+alert("Question added successfully");
+let addAnother = prompt ("Add another question?(yes/no)");
+if (addAnother && addAnother.toLowerCase() === "yes"){
+    addQuestionExam(examObject);
+}else{
+    showAdminMenu();
+}
+}
+
+
+function viewUsers(){
+if(users.length === 0 ){
+alert("No user created");
+}    else {
+let list = "Registered Users:\n";
+for (let i = 0; i < users.length; i++) {
+    list += (i + 1) + ". " + users[i].username + "\n";
+}
+alert(list);
+}
+showAdminMenu();
+
+}
+
+function takeExam(user) {
+if (exam.length === 0) {
+alert("No exam available yet");
+showUserMenu(user);
+return;
+}
+
+let examList = "Available Exams:\n";
+for (let i = 0; i < exam.length; i++) {
+examList += (i + 1) + ". " + exam[i].title + "\n";
+}
+
+let choice = prompt(examList + "Enter the number of the exam you want to take:");
+
+
+if (!choice || !choice.match(/^\d+$/)) {
+alert("Invalid input. Please enter a valid number.");
+showUserMenu(user);
+return;
+}
+
+let index = Number(choice) - 1;
+
+if (index < 0 || index >= exam.length) {
+alert("Invalid exam number. Returning to menu.");
+showUserMenu(user);
+return;
+}
+
+let selectedExam = exam[index];
+alert("You selected: " + selectedExam.title);
+
+if (selectedExam.questions.length === 0) {
+alert("This exam has no questions yet.");
+showUserMenu(user);
+return;
+}
+
+let responses = [];
+
+for (let i = 0; i < selectedExam.questions.length; i++) {
+let q = selectedExam.questions[i];
+let userAnswer = prompt(`Q${i + 1}: ${q.question}`);
+responses.push({
+    question: q.question,
+    answer: userAnswer
+});
+}
+
+alert("You’ve completed the exam! Your answers have been saved.");
+
+if (!user.results) {
+user.results = [];
+}
+
+user.results.push({
+exam: selectedExam.title,
+responses: responses,
+date: new Date().toLocaleString()
+});
+
+showUserMenu(user);
+}
+
+function viewExam(){
+if (exam.length === 0){
+alert("No exam created yet");
+showAdminMenu();
+return;
+}
+let result = " All Exams and Questions : \n\n";
+for(let i=0; i < exam.length; i++ ){
+    result += (i + 1) + ". Exam Title : " + exam[i].title + "\n";
+    const questions = exam[i].questions;
+    if (questions.length === 0){
+        result += "No question added yet.\n";
+    }else{
+        for (let j = 0; j < questions.length; j++){
+            result +=  "" + (j + 1) + " ." + questions[j].question + "\n ";
+        }
+    }
+    result += "\n";
+}
+alert(result);
+showAdminMenu();
+}
+</script>
